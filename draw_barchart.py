@@ -5,6 +5,10 @@ import matplotlib.animation as animation
 from IPython.display import HTML
 import numpy as np
 import seaborn as sns
+from datetime import datetime
+from random import randint
+import matplotlib.colors as mc
+import colorsys
 
 df = pd.read_csv ('COVID19-20200917.csv')
 
@@ -17,10 +21,24 @@ fig, ax = plt.subplots(figsize=(15, 8))
 sns.set(style="darkgrid")
 ax.barh(dff['country_name'], dff['cumulative_confirmed'])
 
-from datetime import datetime
-
 fig, ax = plt.subplots(figsize=(15,8))
 fig.subplots_adjust(left=0, bottom=0, right=1, top=1, wspace=None, hspace=None)
+
+# transform colors 
+def transform_color(color, amount = 0.5):
+    try:
+        c = mc.cnames[color]
+    except:
+        c = color
+        c = colorsys.rgb_to_hls(*mc.to_rgb(c))
+    return colorsys.hls_to_rgb(c[0], 1 - amount * (1 - c[1]), c[2])
+all_names = df['country_name'].unique().tolist()
+random_hex_colors = []
+for i in range(len(all_names)):
+    random_hex_colors.append('#' + '%06X' % randint(0, 0xFFFFFF))
+    
+rgb_colors = [transform_color(i, 1) for i in random_hex_colors]
+rgb_colors_opacity = [rgb_colors[x] + (0.325,) for x in range(len(rgb_colors))]
 
 def draw_barchart(date):
     dff = df[df['date'].eq(date)].sort_values(by='cumulative_confirmed', ascending=True).tail(15)
